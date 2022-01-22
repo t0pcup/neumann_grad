@@ -4,9 +4,6 @@ import pandas
 
 param_names = {'alpha': 'α', 'beta': 'β', 'gamma': 'γ'}
 
-length_of_grid = 5
-count_of_data_frames = length_of_grid * length_of_grid
-
 def get_parameter_grid(parameter, initial_parameters_data_frame):
   """
   Функция, возвращающая сетку значений определённого параметра, встречающегося в объекте pandas.DataFrame.
@@ -40,18 +37,20 @@ def draw_optimal_parameter_plot(parameter, initial_parameters_data_frame, result
   dds = get_parameter_grid('dd', initial_parameters_data_frame)
   b = get_parameter_grid('b', initial_parameters_data_frame)[0]
 
-  #pyplot.style.use('classic')
+  length_of_grid_x = len(ds)
+  length_of_grid_y = len(dds)
+  count_of_data_frames = length_of_grid_x * length_of_grid_y
 
   # make data
   X, Y = numpy.meshgrid(numpy.array(ds), numpy.array(dds))
 
   z_list = list()
   i = 0
-  while len(z_list) < length_of_grid:
-    z_list.append([sample for sample in results_data_frame.loc[i:i+length_of_grid-1, 'alpha']])
-    i += length_of_grid
+  while len(z_list) < length_of_grid_y:
+    z_list.append([sample for sample in results_data_frame.loc[i:i+length_of_grid_x-1, 'alpha']])
+    i += length_of_grid_x
   for v in z_list:
-    while len(v) < length_of_grid:
+    while len(v) < length_of_grid_x:
       print('append')
       v.append(0.)
 
@@ -83,6 +82,10 @@ def draw_population_error_plot(initial_parameters_data_frame, results_data_frame
   dds = get_parameter_grid('dd', initial_parameters)
   b = get_parameter_grid('b', initial_parameters)[0]
 
+  length_of_grid_x = len(ds)
+  length_of_grid_y = len(dds)
+  count_of_data_frames = length_of_grid_x * length_of_grid_y
+
   pyplot.style.use('classic')
 
   # make data
@@ -90,11 +93,11 @@ def draw_population_error_plot(initial_parameters_data_frame, results_data_frame
 
   z_list = list()
   i = 0
-  while len(z_list) < length_of_grid:
-    z_list.append([sample for sample in results.loc[i:i+length_of_grid-1, 'pop_error']])
-    i += length_of_grid
+  while len(z_list) < length_of_grid_y:
+    z_list.append([sample for sample in results.loc[i:i+length_of_grid_x-1, 'pop_error']])
+    i += length_of_grid_x
   for v in z_list:
-    while len(v) < length_of_grid:
+    while len(v) < length_of_grid_x:
       print('append')
       v.append(-100.)
 
@@ -105,17 +108,19 @@ def draw_population_error_plot(initial_parameters_data_frame, results_data_frame
   pcm = ax.pcolor(X, Y, Z, shading='nearest')
 
   fig.suptitle(f'Population error', fontsize=14, fontweight='bold')
-  fig.colorbar(pcm, ax=ax, label=f'Absolute value of difference between populations')
+  fig.colorbar(pcm, ax=ax, label=f'Relative value of difference between populations')
   ax.set_title(f'b={b}, σ-birth=0.2, σ-death=1.0')
   ax.set_xlabel('d value')
   ax.set_ylabel("d' value")
 
   pyplot.show()
 
+count_of_data_frames_to_show = 30
+
 results = pandas.read_csv('./out_data/result.csv').fillna(method='bfill')
 initial_parameters = [
   pandas.read_csv(f'./in_data/simulations_results/initial_parameters/{i}.csv')
-  for i in range(1, count_of_data_frames + 1)
+  for i in range(1, count_of_data_frames_to_show + 1)
 ]
 
 def draw_pcf_error_plot(initial_parameters_data_frame, results_data_frame):
@@ -132,6 +137,10 @@ def draw_pcf_error_plot(initial_parameters_data_frame, results_data_frame):
   dds = get_parameter_grid('dd', initial_parameters)
   b = get_parameter_grid('b', initial_parameters)[0]
 
+  length_of_grid_x = len(ds)
+  length_of_grid_y = len(dds)
+  count_of_data_frames = length_of_grid_x * length_of_grid_y
+
   pyplot.style.use('classic')
 
   # make data
@@ -139,11 +148,11 @@ def draw_pcf_error_plot(initial_parameters_data_frame, results_data_frame):
 
   z_list = list()
   i = 0
-  while len(z_list) < length_of_grid:
-    z_list.append([sample for sample in results.loc[i:i+length_of_grid-1, 'pcf_error']])
-    i += length_of_grid
+  while len(z_list) < length_of_grid_y:
+    z_list.append([sample for sample in results.loc[i:i+length_of_grid_x-1, 'pcf_error']])
+    i += length_of_grid_x
   for v in z_list:
-    while len(v) < length_of_grid:
+    while len(v) < length_of_grid_x:
       print('append')
       v.append(-100.)
 
@@ -154,7 +163,7 @@ def draw_pcf_error_plot(initial_parameters_data_frame, results_data_frame):
   pcm = ax.pcolor(X, Y, Z, shading='nearest')
 
   fig.suptitle(f'PCF error', fontsize=14, fontweight='bold')
-  fig.colorbar(pcm, ax=ax, label=f'Square of norm in L_2 of difference')
+  fig.colorbar(pcm, ax=ax, label=f'Relative error of pcf norm')
   ax.set_title(f'b={b}, σ-birth=0.2, σ-death=1.0')
   ax.set_xlabel('d value')
   ax.set_ylabel("d' value")
@@ -164,7 +173,7 @@ def draw_pcf_error_plot(initial_parameters_data_frame, results_data_frame):
 results = pandas.read_csv('./out_data/result.csv').fillna(method='bfill')
 initial_parameters = [
   pandas.read_csv(f'./in_data/simulations_results/initial_parameters/{i}.csv')
-  for i in range(1, count_of_data_frames + 1)
+  for i in range(1, count_of_data_frames_to_show + 1)
 ]
 
 draw_optimal_parameter_plot('alpha', initial_parameters, results)
